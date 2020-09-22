@@ -80,3 +80,6 @@ c:\pycms> docker run --rm -it -v %cd%:/host idm-docker-staging.packages.idmod.or
     `export PKG_CONFIG_PATH=/Library/Frameworks/Mono.framework/Versions/6.10.0/lib/pkgconfig/`
   - verify that `pkg-config` sees the `mono-2.pc` file by running `pkg-config --libs mono-2`
 - install Python.Net with `pip3 install pythonnet` (_alternatively_ install the latest Python.Net with `pip3 install git+https://github.com/pythonnet/pythonnet`)
+- **Note: If using a virtual environment, activate the virtual environment before running the `export` command for `PKG_CONFIG_PATH`.**
+- **Note: Python 3 might be the default Python on your system. If so, use `pip install pythonnet` rather than `pip3 install pythonnet`.**
+
