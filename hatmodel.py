@@ -99,22 +99,22 @@ def build_model(**kwargs):
 
     # https://www.medrxiv.org/content/10.1101/2020.06.23.20138065v1.full.pdf
     parameters = [
-        {"name":"sigma-h",          "value":0.0833},    # incubation rate (human E->I1)
-        {"name":"phi-h",            "value":0.0019},    # progression from human I1->I2
-        {"name":"omega-h",          "value":0.006},     # human recovery rate
+        {"name":"sigma-h",          "value":0.0833},    # incubation rate (human E->I1) (12 days)
+        {"name":"phi-h",            "value":0.0019},    # progression from human I1->I2 (526 days)
+        {"name":"omega-h",          "value":0.006},     # human recovery rate (167 days)
         {"name":"beta-v",           "value":0.065},     # beta for tsetse fly infection from infectious human
         {"name":"p-human-feed",     "value":0.05},      # probability of human feed
         {"name":"p-reservoir-feed", "value":0.23},      # probability of reservoir host feed (assume pigs)
-        {"name":"sigma-v",          "value":0.034},     # incubation rate (tsetse E->I)
-        {"name":"mu-v",             "value":0.03},      # tsetse fly mortality rate
+        {"name":"sigma-v",          "value":0.034},     # incubation rate (tsetse E->I) (29.4 days)
+        {"name":"mu-v",             "value":0.03},      # tsetse fly mortality rate (~33 days)
         # _not_ from the paper referenced above
         {"name":"p-feed",           "value":1.0/3},     # probability of feeding in the first 24 hours
         {"name":"beta-h",           "value":1.0},       # beta for human infection by infectious tsetse fly
         {"name":"beta-r",           "value":1.0},       # beta for reservoir infection by infectious tsetse fly
         {"name":"phi-r",            "value":0.0019},    # reservoir incubation rate
         {"name":"omega-r",          "value":0.006},     # reservoir recovery rate
-        {"name":"mu-h",             "value":1.0/80},    # human mortality rate
-        {"name":"mu-r",             "value":1.0/5},     # reservoir mortality rate
+        {"name":"mu-h",             "value":1.0/(80*365)},  # human mortality rate (80 year lifespan)
+        {"name":"mu-r",             "value":1.0/(5*365)}    # reservoir mortality rate (5 year lifespan)
     ]
 
     def _add_parameter(name: str, value: float):
@@ -147,8 +147,8 @@ def build_model(**kwargs):
 
     # Simplified(?) version
     model.add_function("infectious-feed", "(* p-feed (+ (* p-human-feed (/ human-infectious-one human-population)) (* p-reservoir-feed (/ reservoir-infectious reservoir-population))) beta-v)")
-    model.add_reaction("feed-and-infected",      ["tsetse-susceptible"], ["tsetse-exposed"], "infectious-feed")
-    model.add_reaction("become-non-susceptible", ["tsetse-susceptible"], ["tsetse-non-susceptible"], "(- 1 infectious-feed)")
+    model.add_reaction("feed-and-infected",      ["tsetse-susceptible"], ["tsetse-exposed"], "(* infectious-feed tsetse-susceptible)")
+    model.add_reaction("become-non-susceptible", ["tsetse-susceptible"], ["tsetse-non-susceptible"], "(* (- 1 infectious-feed) tsetse-susceptible)")
 
     model.add_reaction("tsetse-progress-to-infectious", ["tsetse-exposed"], ["tsetse-infectious"], "(* sigma-v tsetse-exposed)")
 
@@ -165,10 +165,10 @@ def build_model(**kwargs):
     model.add_reaction("human-infectious-two-death-birth", ["human-infectious-two"], ["human-susceptible"], "(* mu-h human-infectious-two)")
     model.add_reaction("human-recovered-death-birth",      ["human-recovered"],      ["human-susceptible"], "(* mu-h human-recovered)")
 
-    # model.add_reaction("vector-susceptible-death-birth",     ["tsetse-susceptible"],     ["tsetse-susceptible"], "(* mu-h tsetse-susceptible)")
-    model.add_reaction("vector-exposed-death-birth",         ["tsetse-exposed"],         ["tsetse-susceptible"], "(* mu-h tsetse-exposed)")
-    model.add_reaction("vector-infectious-death-birth",      ["tsetse-infectious"],      ["tsetse-susceptible"], "(* mu-h tsetse-infectious)")
-    model.add_reaction("vector-non-susceptible-death-birth", ["tsetse-non-susceptible"], ["tsetse-susceptible"], "(* mu-h tsetse-non-susceptible)")
+    # model.add_reaction("vector-susceptible-death-birth",     ["tsetse-susceptible"],     ["tsetse-susceptible"], "(* mu-v tsetse-susceptible)")
+    model.add_reaction("vector-exposed-death-birth",         ["tsetse-exposed"],         ["tsetse-susceptible"], "(* mu-v tsetse-exposed)")
+    model.add_reaction("vector-infectious-death-birth",      ["tsetse-infectious"],      ["tsetse-susceptible"], "(* mu-v tsetse-infectious)")
+    model.add_reaction("vector-non-susceptible-death-birth", ["tsetse-non-susceptible"], ["tsetse-susceptible"], "(* mu-v tsetse-non-susceptible)")
 
     # model.add_reaction("reservoir-susceptible-death-birth", ["reservoir-susceptible"], ["reservoir-susceptible"], "(* mu-r reservoir-susceptible)")
     model.add_reaction("reservoir-exposed-death-birth",     ["reservoir-exposed"],     ["reservoir-susceptible"], "(* mu-r reservoir-exposed)")
