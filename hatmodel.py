@@ -50,7 +50,10 @@ def main():
     data = solver.GetTrajectoryData()   # Retrieve the recorded data (all observables, see build_model())
     for index, label in enumerate(solver.GetTrajectoryLabels()):
         # Each "row" of data is one trajectory of one observable, the label is observable_name{run#}
-        plt.plot([float(value) for value in data[index]], label=str(label))
+        color = ["red", "darkorange", "gold", "green", "blue", "indigo", "violet"][index % 7]
+        style = ["solid", "dashed", "dashdot", "dotted"][(index // 7) % 4]
+        marker = [None, "o", "^", "1", "+", "x"][(index // 28) % 6]
+        plt.plot([float(value) for value in data[index]], label=str(label), color=color, linestyle=style, marker=marker)
     plt.legend()
     if not args.png:
         plt.show()
